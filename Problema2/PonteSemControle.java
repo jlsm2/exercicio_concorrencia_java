@@ -18,7 +18,7 @@ class Carro implements Runnable {
     }
 }
 
-public class Threads {
+public class PonteSemControle {
     public static void main(String[] args) {
         for (int i = 1; i <= 5; i++) {
             String direcao = (i % 2 == 0) ? "esquerda" : "direita";
