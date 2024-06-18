@@ -28,7 +28,7 @@ class Carro implements Runnable {
     }
 }
 
-public class Threads {
+public class PonteComControle {
     public static void main(String[] args) {
         Semaphore semaforo = new Semaphore(1);
 
