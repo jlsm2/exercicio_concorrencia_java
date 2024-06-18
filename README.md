@@ -1,1 +1,1 @@
-# exercicio_concorrencia_java
+Repositório para as questões de concorrência de java de InfraSW
