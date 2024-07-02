@@ -7,11 +7,12 @@ class Barbearia {
     private Semaphore dormindo;
     private Semaphore cortando;
     private ReentrantLock lock;
+
     public Barbearia(int numCadeiras) {
         this.numCadeiras = numCadeiras;
         this.cadeirasLivres = new Semaphore(numCadeiras);
         this.cortando = new Semaphore(0);
-        this.dormindo = new Semaphore(0);
+        this.dormindo = new Semaphore(1);
         this.lock = new ReentrantLock();
     }
 
@@ -20,17 +21,18 @@ class Barbearia {
         System.out.println("O cliente " + cliente + " acabou de entrar na Barbearia!");
 
         if (cadeirasLivres.availablePermits() > 0) {
-            cadeirasLivres.acquire();
+            cadeirasLivres.acquire(); // ocupando uma cadeira
             lock.unlock();
 
-            cortando.acquire();
-            dormindo.release();
+            dormindo.release(); // acorda o barbeiro
+
+            cortando.acquire(); // ocupando a cadeira do barbeiro
 
             System.out.println(cliente + " está cortando o cabelo agora.");
 
             Thread.sleep(2000); // tempo para cortar o cabelo
 
-            System.out.println("Corte finalizado, " + cliente + " adorou o corte e está indo embora.");
+            System.out.println("Corte finalizado, o cliente " + cliente + " adorou o corte e está indo embora.");
 
             cadeirasLivres.release();
         } else {
@@ -42,7 +44,10 @@ class Barbearia {
     public void barbear() {
         while (true) {
             try {
-                dormindo.acquire();
+                if (cadeirasLivres.availablePermits() == numCadeiras) {
+                    dormindo.acquire(); // não tem ninguém na barbearia
+                    System.out.println("O barbeiro está dormindo...");
+                }
                 cortando.release();
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
@@ -51,6 +56,7 @@ class Barbearia {
         }
     }
 }
+
 
 class Cliente extends Thread {
     private int cliente;
@@ -61,7 +67,6 @@ class Cliente extends Thread {
         this.barbearia = barbearia;
     }
 
-    @Override
     public void run() {
         try {
             barbearia.cortar(cliente);
@@ -78,7 +83,6 @@ class Barbeiro extends Thread {
         this.barbearia = barbearia;
     }
 
-    @Override
     public void run() {
         barbearia.barbear();
     }
