@@ -37,7 +37,7 @@ class Barbearia {
             cadeirasLivres.release();
         } else {
             lock.unlock();
-            System.out.println("Parece que a Barbearia está cheia e o cliente irá embora");
+            System.out.println("Parece que a Barbearia está cheia e o cliente " + cliente + " irá embora");
         }
     }
 
@@ -57,8 +57,19 @@ class Barbearia {
     }
 }
 
+class Barbeiro implements Runnable {
+    private Barbearia barbearia;
 
-class Cliente extends Thread {
+    public Barbeiro(Barbearia barbearia) {
+        this.barbearia = barbearia;
+    }
+
+    public void run() {
+        barbearia.barbear();
+    }
+}
+
+class Cliente implements Runnable {
     private int cliente;
     private Barbearia barbearia;
 
@@ -76,28 +87,16 @@ class Cliente extends Thread {
     }
 }
 
-class Barbeiro extends Thread {
-    private Barbearia barbearia;
-
-    public Barbeiro(Barbearia barbearia) {
-        this.barbearia = barbearia;
-    }
-
-    public void run() {
-        barbearia.barbear();
-    }
-}
-
 public class Main {
     public static void main(String[] args) {
-        Barbearia barbearia = new Barbearia(5);
+        Barbearia barbearia = new Barbearia(10);
 
-        Barbeiro barbeiro = new Barbeiro(barbearia);
-        barbeiro.start();
+        Thread barbeiroThread = new Thread(new Barbeiro(barbearia));
+        barbeiroThread.start();
 
-        for (int i = 1; i <= 10; i++) {
-            Cliente cliente = new Cliente(i, barbearia);
-            cliente.start();
+        for (int i = 1; i <= 100; i++) {
+            Thread clienteThread = new Thread(new Cliente(i, barbearia));
+            clienteThread.start();
 
             try {
                 Thread.sleep(1000); // intervalo de chegada dos clientes
