@@ -13,18 +13,14 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.Semaphore;
 
 public class Restaurante {
-    private final int CAPACIDADE = 5; // constante
-    private final Semaphore cadeirasLivres = new Semaphore(CAPACIDADE, true); // fair=true para garantir que a fila exista (FIFO)
-    private final ReentrantLock lock = new ReentrantLock();
-    private int pessoasNaMesa = 0; // não possui final pois seu valor muda
+    private final int CAPACIDADE = 5;
+    private final Semaphore cadeirasLivres = new Semaphore(CAPACIDADE, true); // usando fair=true para que FIFO seja garantido
+    private final ReentrantLock lock = new ReentrantLock(true); // usando fair=true para que FIFO seja garantido no lock também
+    private int pessoasNaMesa = 0;
+    private int queremSair = 0;
 
-    public void entrarRestaurante(int numCliente) throws InterruptedException {
-        // não funciona ainda, mas era bom botar
-        /*if(!cadeirasLivres.tryAcquire()) {
-            System.out.println("Cliente " + numCliente + " tentou entrar, mas o restaurante está cheio. Esperando...");
-            cadeirasLivres.acquire(); // como não conseguiu uma cadeira, ele entra na fila de espera
-        }*/
-        cadeirasLivres.acquire(); // tenta adquirir uma cadeira, caso não consiga, entra na fila de espera
+    public void entrarRestaurante(int numCliente) throws InterruptedException { // throews... necessário por causa do acquire
+        cadeirasLivres.acquire(); // // tenta adquirir uma cadeira, caso não consiga, entra na fila de esper
         lock.lock(); // adquirindo uma cadeira, entra na região crítica
         try {
             pessoasNaMesa++;
@@ -37,12 +33,18 @@ public class Restaurante {
     public void sairRestaurante(int numCliente) {
         lock.lock(); // sempre vai entrar na região crítica
         try {
-            pessoasNaMesa--;
-            System.out.println("Cliente " + numCliente + " saiu da mesa. Pessoas na mesa: " + pessoasNaMesa);
+            queremSair++;
+            System.out.println("Cliente " + numCliente + " quer sair. Pessoas querendo sair: " + queremSair);
+
+            if (queremSair == pessoasNaMesa) { // se todos quiserem sair
+                System.out.println("Todos os clientes estão saindo da mesa.");
+                pessoasNaMesa = 0; // resetar as variáveis
+                queremSair = 0;
+                cadeirasLivres.release(CAPACIDADE); // liberando todas as cadeiras
+            }
         } finally {
             lock.unlock(); // saindo da região crítica
         }
-        cadeirasLivres.release(); // libera uma cadeira
     }
 
     private static void criarCliente(Restaurante restaurante, int numCliente) {
@@ -50,7 +52,7 @@ public class Restaurante {
             try {
                 System.out.println("Cliente " + numCliente + " chegou no restaurante.");
                 restaurante.entrarRestaurante(numCliente);
-                Thread.sleep((long) (Math.random() * 1000)); // quando realmente entrar e sentar no restaurante, depois de um tempo aleatório a pessoa sai
+                Thread.sleep((long) (Math.random() * 1000)); // introduzindo aleatoriedade
                 restaurante.sairRestaurante(numCliente);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -58,11 +60,11 @@ public class Restaurante {
         }).start();
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        final int NUM_CLIENTES = 100; // número fixo (monitoria)
+    public static void main(String[] args) {
         Restaurante restaurante = new Restaurante(); // inicializando o restaurante
+        final int NUM_CLIENTES = 100; // número fixo de todas as questões
         for (int i = 0; i < NUM_CLIENTES; i++) {
-            criarCliente(restaurante, i); // criando os clientes (threads)
+            criarCliente(restaurante, i);
         }
     }
 }
