@@ -62,7 +62,7 @@ public class Restaurante {
 
     public static void main(String[] args) {
         Restaurante restaurante = new Restaurante(); // inicializando o restaurante
-        final int NUM_CLIENTES = 50; // número fixo de todas as questões
+        final int NUM_CLIENTES = 100; // número fixo de todas as questões
         for (int i = 0; i < NUM_CLIENTES; i++) {
             criarCliente(restaurante, i);
         }
