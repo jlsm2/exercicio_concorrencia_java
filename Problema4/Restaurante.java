@@ -19,8 +19,8 @@ public class Restaurante {
     private int pessoasNaMesa = 0;
     private int queremSair = 0;
 
-    public void entrarRestaurante(int numCliente) throws InterruptedException { // throews... necessário por causa do acquire
-        cadeirasLivres.acquire(); // // tenta adquirir uma cadeira, caso não consiga, entra na fila de esper
+    public void entrarRestaurante(int numCliente) throws InterruptedException { // throws... necessário por causa do acquire
+        cadeirasLivres.acquire(); // tenta adquirir uma cadeira, caso não consiga, entra na fila de espera
         lock.lock(); // adquirindo uma cadeira, entra na região crítica
         try {
             pessoasNaMesa++;
@@ -54,7 +54,7 @@ public class Restaurante {
                 restaurante.entrarRestaurante(numCliente);
                 Thread.sleep((long) (Math.random() * 1000)); // introduzindo aleatoriedade
                 restaurante.sairRestaurante(numCliente);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException e) { // necessário por causa do sleep
                 e.printStackTrace();
             }
         }).start();
@@ -62,7 +62,7 @@ public class Restaurante {
 
     public static void main(String[] args) {
         Restaurante restaurante = new Restaurante(); // inicializando o restaurante
-        final int NUM_CLIENTES = 100; // número fixo de todas as questões
+        final int NUM_CLIENTES = 50; // número fixo de todas as questões
         for (int i = 0; i < NUM_CLIENTES; i++) {
             criarCliente(restaurante, i);
         }
