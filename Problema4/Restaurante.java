@@ -15,7 +15,7 @@ import java.util.concurrent.Semaphore;
 public class Restaurante {
     private final int CAPACIDADE = 5;
     private final Semaphore cadeirasLivres = new Semaphore(CAPACIDADE, true); // usando fair=true para que FIFO seja garantido
-    private final ReentrantLock lock = new ReentrantLock(true); // usando fair=true para que FIFO seja garantido no lock também
+    private final ReentrantLock lock = new ReentrantLock();
     private int pessoasNaMesa = 0;
     private int queremSair = 0;
 
@@ -62,7 +62,7 @@ public class Restaurante {
 
     public static void main(String[] args) {
         Restaurante restaurante = new Restaurante(); // inicializando o restaurante
-        final int NUM_CLIENTES = 100; // número fixo de todas as questões
+        final int NUM_CLIENTES = 20; // número fixo de todas as questões
         for (int i = 0; i < NUM_CLIENTES; i++) {
             criarCliente(restaurante, i);
         }
