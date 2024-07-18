@@ -8,13 +8,12 @@ não tem fila, todos tentam entrar ao mesmo tempo
 
 */
 
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.locks.ReentrantLock; // para controlar o acesso à região crítica
+import java.util.concurrent.Semaphore; // para controlar a quantidade de passageiros que podem entrar no ônibus
+import java.util.concurrent.ThreadLocalRandom; // quando várias threads precisam gerar números aleatórios
 
 public class Onibus {
-    private static final int CAPACIDADE_MAX = 50;
+    private static final int CAPACIDADE_MAX = 50; // cabem apenas 50 pessoas nos ônibus
     private final ReentrantLock lock = new ReentrantLock();
     private final Semaphore lugarOnibus = new Semaphore(0);
     private final Semaphore entrarOnibus = new Semaphore(0);
