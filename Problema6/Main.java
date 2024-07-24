@@ -8,7 +8,7 @@ class Banheiro {
     private String sexoBanheiro;
     private final Semaphore semaphore;
     private final Lock lock;
-    
+
     public Banheiro(int capacidade) {
         this.capacidade = capacidade;
         this.pessoasDentro = 0;
@@ -16,29 +16,32 @@ class Banheiro {
         this.semaphore = new Semaphore(capacidade, true);
         this.lock = new ReentrantLock(true);
     }
-    
+
     public void entrar(String sexoPessoa, int id) throws InterruptedException {
-        lock.lock();
-        try {
-            if (sexoBanheiro != null && !sexoPessoa.equals(sexoBanheiro)) {
-                System.out.println("Pessoa " + id + " (" + sexoPessoa + ")" + " não pode entrar no banheiro pois já há " + sexoBanheiro + " dentro.");
-            }
-            while (pessoasDentro == capacidade || (sexoBanheiro != null && !sexoBanheiro.equals(sexoPessoa))) {
-                lock.unlock();
-                Thread.sleep(50);
-                lock.lock();
-            }
+        while (true) {
             semaphore.acquire();
-            pessoasDentro++;
-            sexoBanheiro = sexoPessoa;
-            System.out.println("Pessoa " + id + " (" + sexoPessoa + ")" + " entrou no banheiro [" + pessoasDentro + "/" + capacidade + "]");
-        } finally {
-            lock.unlock();
+            lock.lock();
+            Thread.sleep(1000);
+            try {
+                if (sexoBanheiro == null || sexoBanheiro.equals(sexoPessoa)) {
+                    pessoasDentro++;
+                    sexoBanheiro = sexoPessoa;
+                    System.out.println("Pessoa " + id + " (" + sexoPessoa + ")" + " entrou no banheiro [" + pessoasDentro + "/" + capacidade + "]");
+                    break;
+                } else {
+                    semaphore.release();
+                    System.out.println("Pessoa " + id + " (" + sexoPessoa + ")" + " não pode entrar no banheiro pois já há " + sexoBanheiro + " dentro.");
+                }
+            } finally {
+                lock.unlock();
+            }
+            Thread.sleep(500); // tempo de espera para tentar entrar novamente
         }
     }
-    
-    public void sair(String sexoPessoa, int id) {
+
+    public void sair(String sexoPessoa, int id) throws InterruptedException {
         lock.lock();
+        Thread.sleep(1000);
         try {
             pessoasDentro--;
             System.out.println("Pessoa " + id + " (" + sexoPessoa + ")" + " saiu do banheiro [" + pessoasDentro + "/" + capacidade + "]");
@@ -55,7 +58,7 @@ class Banheiro {
 class Pessoa implements Runnable {
     private final Banheiro banheiro;
     private final String sexoPessoa;
-    private int id;
+    private final int id;
 
     public Pessoa(Banheiro banheiro, String sexoPessoa, int id) {
         this.banheiro = banheiro;
@@ -78,7 +81,7 @@ public class Main {
     public static void main(String[] args) {
         Banheiro banheiro = new Banheiro(3);
 
-        for (int i = 1; i <= 10; i++) {
+        for (int i = 1; i <= 100; i++) {
             Pessoa pessoa = new Pessoa(banheiro, i % 2 == 0 ? "homem" : "mulher", i);
             new Thread(pessoa).start();
         }
