@@ -50,7 +50,8 @@ public class Onibus {
                 Thread.sleep(1000); // tempo para os passageiros entrar no ônibus
                 saidaOnibus(); // chamando a função para o ônibus sair
             } else {
-                System.out.println("Ninguém está esperando"); // quando não houer ninguém na parada
+                System.out.println("Ninguém está esperando"); // quando não houver ninguém na parada
+                System.out.println("Ônibus partindo vazio");
             }
         } finally {
             lock.unlock(); // saindo da região crítica
